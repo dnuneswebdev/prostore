@@ -13,7 +13,7 @@ import {auth} from "@/auth";
 import {redirect} from "next/navigation";
 import SignUpForm from "./signup-form";
 
-export const metaData: Metadata = {
+export const metadata: Metadata = {
   title: "Sign Up",
 };
 
