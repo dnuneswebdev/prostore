@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: `%s | ProStore`,
     default: APP_NAME,
   },
-  description: `${APP_DESCRIPTION}`,
+  description: APP_DESCRIPTION,
   metadataBase: new URL(BASE_URL),
 };
 
