@@ -1,13 +1,11 @@
 import NextAuth from "next-auth";
-import {PrismaAdapter} from "@auth/prisma-adapter";
 import {prisma} from "@/db/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 // import {compare} from "./lib/encrypt";
 import type {NextAuthConfig} from "next-auth";
 import {cookies} from "next/headers";
-import {NextResponse} from "next/server";
-import nextConfig from "./next.config";
 import {compareSync} from "bcrypt-ts-edge";
+import {authConfig} from "./auth.config";
 
 export const config = {
   pages: {
@@ -18,7 +16,6 @@ export const config = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       credentials: {
@@ -58,6 +55,7 @@ export const config = {
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async session({session, user, trigger, token}: any) {
       session.user.id = token.sub; // set the user id from the token
       session.user.role = token.role; // set the user role from the token
@@ -74,6 +72,7 @@ export const config = {
     async jwt({token, user, trigger, session}: any) {
       //assing user fields to token
       if (user) {
+        token.id = user.id;
         token.role = user.role;
 
         if (user.name === "NO_NAME") {
@@ -92,30 +91,6 @@ export const config = {
       }
 
       return token;
-    },
-    authorized({request, auth}: any) {
-      //check for session cart cookie
-      if (!request.cookies.get("sessionCartId")) {
-        //generate new sessionCartId cookie
-        const sessionCartId = crypto.randomUUID();
-
-        //create new request headers
-        const newRequestheaders = new Headers(request.headers);
-
-        //create new response and add the headers
-        const response = NextResponse.next({
-          request: {
-            headers: newRequestheaders,
-          },
-        });
-
-        //set new sessionCartId cookie in the response
-        response.cookies.set("sessionCartId", sessionCartId);
-
-        return response;
-      } else {
-        return true;
-      }
     },
   },
 } satisfies NextAuthConfig;
