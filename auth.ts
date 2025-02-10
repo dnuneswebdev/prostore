@@ -93,6 +93,30 @@ export const config = {
 
       return token;
     },
+    authorized({request, auth}: any) {
+      //check for session cart cookie
+      if (!request.cookies.get("sessionCartId")) {
+        //generate new sessionCartId cookie
+        const sessionCartId = crypto.randomUUID();
+
+        //create new request headers
+        const newRequestheaders = new Headers(request.headers);
+
+        //create new response and add the headers
+        const response = NextResponse.next({
+          request: {
+            headers: newRequestheaders,
+          },
+        });
+
+        //set new sessionCartId cookie in the response
+        response.cookies.set("sessionCartId", sessionCartId);
+
+        return response;
+      } else {
+        return true;
+      }
+    },
   },
 } satisfies NextAuthConfig;
 

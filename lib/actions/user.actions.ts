@@ -56,6 +56,7 @@ export async function signUpWithUser(prevState: unknown, formData: FormData) {
       },
     });
 
+    //sign in the user after registration
     await signIn("credentials", {
       email: user.email,
       password: plainPassword, //precisa passar a senha sem hash para fazer login
