@@ -13,7 +13,7 @@ export const config = {
     error: "/sign-in",
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   providers: [
@@ -93,6 +93,6 @@ export const config = {
       return token;
     },
   },
-} satisfies NextAuthConfig;
+};
 
 export const {handlers, auth, signIn, signOut} = NextAuth(config);
