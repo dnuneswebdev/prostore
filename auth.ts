@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import {prisma} from "@/db/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 // import {compare} from "./lib/encrypt";
-import type {NextAuthConfig} from "next-auth";
 import {cookies} from "next/headers";
 import {compareSync} from "bcrypt-ts-edge";
 import {authConfig} from "./auth.config";
@@ -87,6 +86,38 @@ export const config = {
               name: token.name,
             },
           });
+        }
+
+        if (trigger === "signIn" || trigger === "signUp") {
+          const cookiesObj = await cookies();
+          const sessionCartId = cookiesObj.get("sessionCartId")?.value;
+
+          if (sessionCartId) {
+            const sessionCart = await prisma.cart.findFirst({
+              where: {
+                sessionCartId,
+              },
+            });
+
+            if (sessionCart) {
+              //delete current user cart
+              await prisma.cart.deleteMany({
+                where: {
+                  userId: user.id,
+                },
+              });
+
+              //update the cart with the user id
+              await prisma.cart.update({
+                where: {
+                  id: sessionCart.id,
+                },
+                data: {
+                  userId: user.id,
+                },
+              });
+            }
+          }
         }
       }
 

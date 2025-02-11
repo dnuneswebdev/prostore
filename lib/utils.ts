@@ -5,6 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Currency format options
+const CURRENCY_FORMAT = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+});
+
 //convert prisma object into regular JS object
 export function convertToRegularJsObject<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
@@ -50,5 +57,16 @@ export function roundNumber(value: number | string): number {
     return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
   } else {
     throw new Error("Invalid value type");
+  }
+}
+
+//function to format currency
+export function formatCurrency(amount: number | string | null): string {
+  if (typeof amount === "number") {
+    return CURRENCY_FORMAT.format(amount);
+  } else if (typeof amount === "string") {
+    return CURRENCY_FORMAT.format(Number(amount));
+  } else {
+    return "NaN";
   }
 }
