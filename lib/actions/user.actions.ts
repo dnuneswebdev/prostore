@@ -6,6 +6,7 @@ import {
   shippingAddressSchema,
   signinFormSchema,
   signUpFormSchema,
+  updateProfileSchema,
 } from "../validators";
 import {isRedirectError} from "next/dist/client/components/redirect-error";
 import {hashSync} from "bcrypt-ts-edge";
@@ -150,6 +151,41 @@ export async function updateUserPaymentMethod(
       success: true,
       message: "User updated successfully",
     };
+  } catch (error) {
+    return {success: false, message: formatError(error)};
+  }
+}
+
+//update user profile
+export async function updateUserProfile(
+  data: z.infer<typeof updateProfileSchema>
+) {
+  try {
+    const session = await auth();
+
+    if (!session) throw new Error("User not authenticated");
+
+    const currentUser = await prisma.user.findUnique({
+      where: {
+        id: session?.user?.id,
+      },
+    });
+
+    if (!currentUser) throw new Error("User not found");
+
+    const user = updateProfileSchema.parse(data);
+
+    await prisma.user.update({
+      where: {
+        id: currentUser.id,
+      },
+      data: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+
+    return {success: true, message: "User updated successfully"};
   } catch (error) {
     return {success: false, message: formatError(error)};
   }

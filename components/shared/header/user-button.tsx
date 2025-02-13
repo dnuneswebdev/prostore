@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {signOutUser} from "@/lib/actions/user.actions";
-import {LogOut, User} from "lucide-react";
+import {LogOut, TableOfContents, User, User2} from "lucide-react";
 import Link from "next/link";
 
 const UserButton = async () => {
@@ -49,6 +49,26 @@ const UserButton = async () => {
               </div>
             </div>
           </DropdownMenuLabel>
+          <DropdownMenuItem className="p-0 mb-1">
+            <Link href="/user/profile">
+              <Button
+                className="w-full py-4 px-2 h-4 justify-start"
+                variant="ghost"
+              >
+                <User2 /> Profile
+              </Button>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="p-0 mb-1">
+            <Link href="/user/orders">
+              <Button
+                className="w-full py-4 px-2 h-4 justify-start"
+                variant="ghost"
+              >
+                <TableOfContents /> Orders
+              </Button>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem className="p-0 mb-1">
             <form action={signOutUser} className="w-full">
               <Button

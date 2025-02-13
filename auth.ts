@@ -121,6 +121,15 @@ export const config = {
         }
       }
 
+      //handle session updates
+      if (
+        (session?.user?.name || session?.user?.email) &&
+        trigger === "update"
+      ) {
+        token.name = session.user.name;
+        token.email = session.user.email;
+      }
+
       return token;
     },
   },
