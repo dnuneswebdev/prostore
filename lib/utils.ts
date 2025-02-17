@@ -50,6 +50,13 @@ export function formatError(error: any) {
   }
 }
 
+//format number
+
+export function formatNumber(value: number): string {
+  const numberFormat = new Intl.NumberFormat("en-US");
+  return numberFormat.format(value);
+}
+
 //rounder number to 2 decimal places
 export function roundNumber(value: number | string): number {
   if (typeof value === "number") {

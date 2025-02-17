@@ -25,6 +25,8 @@ import {
 import {
   approvePayPalOrder,
   createPayPalOrder,
+  updateOrderToDelivered,
+  updateOrderToPaidCOD,
 } from "@/lib/actions/order.actions";
 
 type OrderDetailsTableProps = {
@@ -89,6 +91,53 @@ const OrderDetailsTable = ({
     });
   };
 
+  const MarkAsPaidButton = () => {
+    const [isPending, startTransition] = useTransition();
+    const {toast} = useToast();
+
+    return (
+      <Button
+        type="button"
+        disabled={isPending}
+        onClick={() =>
+          startTransition(async () => {
+            const response = await updateOrderToPaidCOD(order.id);
+            toast({
+              variant: response.success ? "default" : "destructive",
+              description: response.message,
+            });
+          })
+        }
+      >
+        {isPending ? "processing..." : "Mark As Paid"}
+      </Button>
+    );
+  };
+
+  // Button to mark order as delivered
+  const MarkAsDeliveredButton = () => {
+    const [isPending, startTransition] = useTransition();
+    const {toast} = useToast();
+
+    return (
+      <Button
+        type="button"
+        disabled={isPending}
+        onClick={() =>
+          startTransition(async () => {
+            const response = await updateOrderToDelivered(order.id);
+            toast({
+              variant: response.success ? "default" : "destructive",
+              description: response.message,
+            });
+          })
+        }
+      >
+        {isPending ? "processing..." : "Mark As Delivered"}
+      </Button>
+    );
+  };
+
   return (
     <>
       <h1 className="py-4 text-2xl">Order {formatId(id)}</h1>
@@ -118,9 +167,9 @@ const OrderDetailsTable = ({
               <p className="mb-2">
                 {shippingAddress.postalCode}, {shippingAddress.Country}
               </p>
-              {isPaid ? (
+              {isDelivered ? (
                 <Badge variant="secondary">
-                  Paid on {formatDateTime(deliveredAt!).dateTime}
+                  Delivered at {formatDateTime(deliveredAt!).dateTime}
                 </Badge>
               ) : (
                 <Badge variant="destructive">Not Delivered</Badge>
@@ -199,6 +248,12 @@ const OrderDetailsTable = ({
                   </PayPalScriptProvider>
                 </div>
               )}
+
+              {isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
+                <MarkAsPaidButton />
+              )}
+
+              {isAdmin && isPaid && !isDelivered && <MarkAsDeliveredButton />}
             </CardContent>
           </Card>
         </div>

@@ -20,11 +20,14 @@ const OrderDetailsPage = async ({params}: OrderDetailsPageProps) => {
 
   if (!order) return notFound();
 
+  const session = await auth();
+  const isAdmin = session?.user?.role === "admin" || false;
+
   return (
     <>
       <OrderDetailsTable
         order={order}
-        isAdmin={false}
+        isAdmin={isAdmin}
         paypalClientId={process.env.PAYPAL_CLIENT_ID || "sb"}
       />
     </>

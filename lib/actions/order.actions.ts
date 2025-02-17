@@ -11,6 +11,7 @@ import {CartItem, PaymentResult} from "@/@types/types";
 import {paypal} from "../paypal";
 import {revalidatePath} from "next/cache";
 import {PAGE_SIZE} from "../constants";
+import {Prisma} from "@prisma/client";
 
 export async function createOrder() {
   try {
@@ -312,4 +313,150 @@ export async function getUserOrders({
     data,
     totalPages: Math.ceil(dataCount / limit),
   };
+}
+
+type SalesDataType = {month: string; totalSales: number}[];
+
+//get sales data and order summary for admin dashboard
+export async function getSalesDataAndOrderSummary() {
+  //get counts for each resource
+  const ordersCount = await prisma.order.count();
+  const productsCount = await prisma.product.count();
+  const usersCount = await prisma.user.count();
+
+  //calculate the total sales
+  const totalSales = await prisma.order.aggregate({
+    _sum: {
+      totalPrice: true,
+    },
+  });
+
+  //get monthly sales data
+  const salesDataRaw = await prisma.$queryRaw<
+    Array<{month: string; totalSales: Prisma.Decimal}>
+  >`SELECT to_char("createdAt", 'MM-YYYY') as "month", sum("totalPrice") as "totalSales" FROM "Order" GROUP BY to_char("createdAt", 'MM-YYYY')`;
+
+  const salesData: SalesDataType = salesDataRaw.map((item) => ({
+    month: item.month,
+    totalSales: Number(item.totalSales),
+  }));
+
+  //get the latest orders
+  const latestOrders = await prisma.order.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    take: 5,
+  });
+
+  return {
+    ordersCount,
+    productsCount,
+    usersCount,
+    totalSales,
+    salesData,
+    latestOrders,
+  };
+}
+
+//get all orders
+export async function getAllOrders({
+  limit = PAGE_SIZE,
+  page,
+}: {
+  limit?: number;
+  page: number;
+}) {
+  const data = await prisma.order.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: limit,
+    skip: (page - 1) * limit,
+    include: {
+      //include user info from user table
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const dataCount = await prisma.order.count(); //get total count of orders. seria como fazer o .length
+
+  return {
+    data,
+    totalPages: Math.ceil(dataCount / limit),
+  };
+}
+
+//delete order
+export async function deleteOrder(orderId: string) {
+  try {
+    //delete order
+    await prisma.order.delete({
+      where: {
+        id: orderId,
+      },
+    });
+
+    revalidatePath("/admin/orders");
+
+    return {success: true, message: "Order deleted successfully"};
+  } catch (error) {
+    return {success: false, message: formatError(error)};
+  }
+}
+
+//update COD order to paid
+export async function updateOrderToPaidCOD(orderId: string) {
+  try {
+    await updateOrderToPaid({orderId});
+
+    revalidatePath(`/order/${orderId}`);
+
+    return {success: true, message: "Order marked as paid"};
+  } catch (error) {
+    return {success: false, message: formatError(error)};
+  }
+}
+
+//update COD order to delivered
+export async function updateOrderToDelivered(orderId: string) {
+  try {
+    //update order to delivered
+    const order = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!order) throw new Error("Order not found");
+
+    if (!order.isPaid) throw new Error("Order is not paid");
+
+    await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        isDelivered: true,
+        deliveredAt: new Date(),
+      },
+    });
+
+    revalidatePath(`/order/${orderId}`);
+
+    return {success: true, message: "Order marked as delivered"};
+  } catch (error) {
+    return {success: false, message: formatError(error)};
+  }
 }

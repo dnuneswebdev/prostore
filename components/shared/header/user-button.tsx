@@ -6,9 +6,16 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {signOutUser} from "@/lib/actions/user.actions";
-import {LogOut, TableOfContents, User, User2} from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  TableOfContents,
+  User,
+  User2,
+} from "lucide-react";
 import Link from "next/link";
 
 const UserButton = async () => {
@@ -49,26 +56,39 @@ const UserButton = async () => {
               </div>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuItem className="p-0 mb-1">
-            <Link href="/user/profile">
-              <Button
-                className="w-full py-4 px-2 h-4 justify-start"
-                variant="ghost"
+
+          <DropdownMenuSeparator />
+
+          {session.user?.role === "admin" && (
+            <DropdownMenuItem>
+              <Link
+                href="/admin/dashboard"
+                className="p-0 mb-1 w-full flex items-center gap-2"
               >
-                <User2 /> Profile
-              </Button>
+                <LayoutDashboard /> Dashboard
+              </Link>
+            </DropdownMenuItem>
+          )}
+
+          <DropdownMenuItem>
+            <Link
+              href="/user/orders"
+              className="p-0 mb-1 w-full flex items-center gap-2"
+            >
+              <TableOfContents /> Orders
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="p-0 mb-1">
-            <Link href="/user/orders">
-              <Button
-                className="w-full py-4 px-2 h-4 justify-start"
-                variant="ghost"
-              >
-                <TableOfContents /> Orders
-              </Button>
+          <DropdownMenuItem>
+            <Link
+              href="/user/profile"
+              className="p-0 mb-1 w-full flex items-center gap-2"
+            >
+              <User2 /> Profile
             </Link>
           </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem className="p-0 mb-1">
             <form action={signOutUser} className="w-full">
               <Button
