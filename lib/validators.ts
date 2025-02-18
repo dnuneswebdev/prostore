@@ -25,6 +25,11 @@ export const productSchema = z.object({
   banner: z.string().nullable(),
 });
 
+//schema for updating a product
+export const updateProductSchema = productSchema.extend({
+  id: z.string().min(1, "Id is required"),
+});
+
 //schema for siging users
 export const signinFormSchema = z.object({
   email: z.string().email("Invalid email address"),
