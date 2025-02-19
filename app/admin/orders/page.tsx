@@ -35,12 +35,23 @@ const AdminOrdersPage = async ({searchParams}: AdminOrdersPageProps) => {
 
   const orders = await getAllOrders({
     page: Number(page),
+    query: searchText,
   });
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
         <h1 className="h2-bold">Orders</h1>
+        {searchText && (
+          <div className="gap-2 flex items-center">
+            Filtered by <i>&quot;{searchText}&quot;</i>{" "}
+            <Link href="/admin/orders">
+              <Button variant="outline" size="sm">
+                Clear filter
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -49,6 +60,7 @@ const AdminOrdersPage = async ({searchParams}: AdminOrdersPageProps) => {
             <TableRow>
               <TableHead>ORDER ID</TableHead>
               <TableHead>DATE</TableHead>
+              <TableHead>BUYER</TableHead>
               <TableHead>TOTAL</TableHead>
               <TableHead>PAID</TableHead>
               <TableHead>DELIVERED</TableHead>
@@ -62,6 +74,7 @@ const AdminOrdersPage = async ({searchParams}: AdminOrdersPageProps) => {
                 <TableCell>
                   {formatDateTime(order.createdAt).dateTime}
                 </TableCell>
+                <TableCell>{order.user.name}</TableCell>
                 <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
                 <TableCell>
                   {order.isPaid && order.paidAt

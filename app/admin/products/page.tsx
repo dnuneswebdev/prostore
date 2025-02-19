@@ -40,6 +40,16 @@ const AdminProductsPage = async ({searchParams}: AdminProductsPageProps) => {
       <div className="flex-between">
         <div className="flex items-center gap-3">
           <h1 className="h2-bold">Products</h1>
+          {searchText && (
+            <div className="gap-2 flex items-center">
+              Filtered by <i>&quot;{searchText}&quot;</i>{" "}
+              <Link href="/admin/products">
+                <Button variant="outline" size="sm">
+                  Clear filter
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
         <Button asChild variant="default">
           <Link href="/admin/products/new">Create Product</Link>

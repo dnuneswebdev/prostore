@@ -7,6 +7,7 @@ import {
   signinFormSchema,
   signUpFormSchema,
   updateProfileSchema,
+  updateUserSchema,
 } from "../validators";
 import {isRedirectError} from "next/dist/client/components/redirect-error";
 import {hashSync} from "bcrypt-ts-edge";
@@ -14,6 +15,9 @@ import {prisma} from "@/db/prisma";
 import {formatError} from "../utils";
 import {ShippingAddress} from "@/@types/types";
 import {z} from "zod";
+import {PAGE_SIZE} from "../constants";
+import {revalidatePath} from "next/cache";
+import {Prisma} from "@prisma/client";
 
 //sign in the user with credentials
 export async function signInWithCredentials(
@@ -184,6 +188,83 @@ export async function updateUserProfile(
         email: user.email,
       },
     });
+
+    return {success: true, message: "User updated successfully"};
+  } catch (error) {
+    return {success: false, message: formatError(error)};
+  }
+}
+
+//get all users
+export async function getAllUsers({
+  limit = PAGE_SIZE,
+  page,
+  query,
+}: {
+  limit?: number;
+  page?: number;
+  query?: string;
+}) {
+  const queryFilter =
+    query && query !== "all"
+      ? {
+          name: {
+            contains: query,
+            mode: "insensitive",
+          } as Prisma.StringFilter,
+        }
+      : {};
+
+  const data = await prisma.user.findMany({
+    where: {
+      ...queryFilter,
+    },
+    take: limit,
+    skip: page ? (page - 1) * limit : 0,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const dataCount = await prisma.user.count();
+
+  return {
+    data,
+    totalPages: Math.ceil(dataCount / limit),
+  };
+}
+
+//delete user
+export async function deleteUser(id: string) {
+  try {
+    await prisma.user.delete({
+      where: {
+        id,
+      },
+    });
+
+    revalidatePath("/admin/users");
+
+    return {success: true, message: "User deleted successfully"};
+  } catch (error) {
+    return {success: false, message: formatError(error)};
+  }
+}
+
+//update user
+export async function updateUser(data: z.infer<typeof updateUserSchema>) {
+  try {
+    await prisma.user.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        name: data.name,
+        role: data.role,
+      },
+    });
+
+    revalidatePath("/admin/users");
 
     return {success: true, message: "User updated successfully"};
   } catch (error) {
