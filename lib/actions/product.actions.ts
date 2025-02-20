@@ -48,14 +48,20 @@ type GetAllProductsParams = {
   query: string;
   limit?: number;
   page: number;
+  price: string;
   category?: string;
+  sort?: string;
+  rating?: string;
 };
 
 export async function getAllProducts({
   query,
   limit = PAGE_SIZE,
   page,
+  price,
   category,
+  sort,
+  rating,
 }: GetAllProductsParams) {
   const queryFilter: Prisma.ProductWhereInput =
     query && query !== "all"
@@ -67,15 +73,44 @@ export async function getAllProducts({
         }
       : {};
 
+  const categoryFilter = category && category !== "all" ? {category} : {};
+
+  const priceFilter: Prisma.ProductWhereInput =
+    price && price !== "all"
+      ? {
+          price: {
+            gte: Number(price.split("-")[0]),
+            lte: Number(price.split("-")[1]),
+          },
+        }
+      : {};
+
+  const ratingFilter =
+    rating && rating !== "all"
+      ? {
+          rating: {
+            gte: Number(rating),
+          },
+        }
+      : {};
+
   const data = await prisma.product.findMany({
     where: {
       ...queryFilter,
+      ...categoryFilter,
+      ...priceFilter,
+      ...ratingFilter,
     },
     take: limit,
     skip: (page - 1) * limit,
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy:
+      sort === "lowest"
+        ? {price: "asc"}
+        : sort === "highest"
+        ? {price: "desc"}
+        : sort === "rating"
+        ? {rating: "desc"}
+        : {createdAt: "desc"},
   });
 
   const dataCount = await prisma.product.count();
@@ -158,4 +193,29 @@ export async function deleteProduct(id: string) {
       message: formatError(error),
     };
   }
+}
+
+//get all categories
+export async function getAllCategories() {
+  const data = await prisma.product.groupBy({
+    by: ["category"],
+    _count: true,
+  });
+
+  return data;
+}
+
+//get featured products
+export async function getFeaturedProducts() {
+  const data = await prisma.product.findMany({
+    where: {
+      isFeatured: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 4,
+  });
+
+  return convertToRegularJsObject(data);
 }
