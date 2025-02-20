@@ -45,10 +45,10 @@ export async function getProductById(id: string) {
 
 //get all products
 type GetAllProductsParams = {
-  query: string;
+  query?: string;
   limit?: number;
   page: number;
-  price: string;
+  price?: string;
   category?: string;
   sort?: string;
   rating?: string;
