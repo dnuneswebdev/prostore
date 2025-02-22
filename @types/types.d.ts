@@ -4,6 +4,7 @@ import {productSchema} from "@/lib/validators";
 type Product = z.infer<typeof productSchema> & {
   id: string;
   rating: string;
+  numReviews: number;
   createdAt: Date;
 };
 
@@ -24,3 +25,10 @@ export type Order = z.infer<typeof insertOrderSchema> & {
 };
 export type OrderItem = z.infer<typeof insertOrderItemSchema>;
 export type PaymentResult = z.infer<typeof paymentResultSchema>;
+export type Review = z.infer<typeof insertReviewSchema> & {
+  id: string;
+  createdAt: Date;
+  user?: {
+    name: string;
+  };
+};

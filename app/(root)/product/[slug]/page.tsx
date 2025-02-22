@@ -1,3 +1,4 @@
+import {auth} from "@/auth";
 import AddToCart from "@/components/shared/products/add-to-cart";
 import ProductImages from "@/components/shared/products/product-images";
 import ProductPrice from "@/components/shared/products/product-price";
@@ -6,6 +7,8 @@ import {Card, CardContent} from "@/components/ui/card";
 import {getCartItems} from "@/lib/actions/cart.actions";
 import {getProductBySlug} from "@/lib/actions/product.actions";
 import {notFound} from "next/navigation";
+import ReviewList from "./review-list";
+import Rating from "@/components/shared/products/rating";
 
 type ProductDetailsPageProps = {
   params: Promise<{slug: string}>;
@@ -19,6 +22,8 @@ export default async function ProductDetailsPage({
 
   if (!product) notFound();
 
+  const session = await auth();
+  const userId = session?.user?.id;
   const cart = await getCartItems();
 
   return (
@@ -34,9 +39,10 @@ export default async function ProductDetailsPage({
                 {product.brand} {product.category}
               </p>
               <h1 className="h3-bold">{product.name}</h1>
-              <p>
-                {product.rating} of {product.numReviews} reviews
-              </p>
+              <Rating
+                value={Number(product.rating)}
+                caption={`${product.numReviews} reviews`}
+              />
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <ProductPrice
                   price={Number(product.price)}
@@ -87,6 +93,15 @@ export default async function ProductDetailsPage({
             </Card>
           </div>
         </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="h2-bold">Customer Reviews</h2>
+        <ReviewList
+          userId={userId || ""}
+          productId={product.id}
+          productSlug={slug}
+        />
       </section>
     </>
   );

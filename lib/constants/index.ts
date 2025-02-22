@@ -30,6 +30,12 @@ export const productDefaultValues = {
   banner: null,
 };
 
+export const reviewFormDefaultValues = {
+  title: "",
+  comment: "",
+  rating: 0,
+};
+
 export const USER_ROLES = process.env.USER_ROLES
   ? process.env.USER_ROLES.split(", ")
   : ["admin", "user"];
