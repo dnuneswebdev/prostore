@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
       orderId: object.metadata.orderId,
       paymentResult: {
         id: object.id,
-        status: object.status,
+        status: "COMPLETED",
         email_address: object.billing_details.email!,
-        pricePaid: (object.amount / 100).toFixed(2),
+        pricePaid: (object.amount / 100).toFixed(),
       },
     });
 

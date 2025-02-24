@@ -1,6 +1,5 @@
 import {Button} from "@/components/ui/button";
 import {getOrderById} from "@/lib/actions/order.actions";
-import {get} from "http";
 import Link from "next/link";
 import {notFound, redirect} from "next/navigation";
 import Stripe from "stripe";

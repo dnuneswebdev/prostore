@@ -1,7 +1,6 @@
 import {Metadata} from "next";
 import {getOrderById} from "@/lib/actions/order.actions";
 import {notFound} from "next/navigation";
-import {ShippingAddress} from "@/@types/types";
 import {auth} from "@/auth";
 import OrderDetailsTable from "./order-details-table";
 import Stripe from "stripe";
