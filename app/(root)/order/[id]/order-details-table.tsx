@@ -28,17 +28,20 @@ import {
   updateOrderToDelivered,
   updateOrderToPaidCOD,
 } from "@/lib/actions/order.actions";
+import StripePayment from "./stripe-payment";
 
 type OrderDetailsTableProps = {
   order: Omit<Order, "paymentResult">;
   paypalClientId: string;
   isAdmin: boolean;
+  stripeClientSecret: string | null;
 };
 
 const OrderDetailsTable = ({
   order,
   isAdmin,
   paypalClientId,
+  stripeClientSecret,
 }: OrderDetailsTableProps) => {
   const {toast} = useToast();
   const {
@@ -249,6 +252,18 @@ const OrderDetailsTable = ({
                 </div>
               )}
 
+              {/* stripe */}
+              {!isPaid && paymentMethod === "Stripe" && stripeClientSecret && (
+                <div>
+                  <StripePayment
+                    priceIncents={Number(totalPrice) * 100}
+                    orderId={id}
+                    clientSecret={stripeClientSecret}
+                  />
+                </div>
+              )}
+
+              {/* cashOnDelivery */}
               {isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
                 <MarkAsPaidButton />
               )}
