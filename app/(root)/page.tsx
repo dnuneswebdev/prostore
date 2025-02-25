@@ -1,3 +1,4 @@
+import IconBoxes from "@/components/icon-boxes";
 import ProductCarousel from "@/components/shared/products/product-carousel";
 import ProductList from "@/components/shared/products/product-list";
 import {Button} from "@/components/ui/button";
@@ -16,6 +17,7 @@ export default async function Home() {
       {featuredProducts.length > 0 && (
         <ProductCarousel data={featuredProducts} />
       )}
+      <IconBoxes />
       <ProductList data={latestProducts} title="Newest Arrival" limit={4} />
       <div className="flex justify-center items-center my-7">
         <Button asChild>

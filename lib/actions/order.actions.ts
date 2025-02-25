@@ -12,6 +12,8 @@ import {paypal} from "../paypal";
 import {revalidatePath} from "next/cache";
 import {PAGE_SIZE} from "../constants";
 import {Prisma} from "@prisma/client";
+import {sendPurchaseReceipt} from "@/email";
+import {ShippingAddress} from "@stripe/stripe-js";
 
 export async function createOrder() {
   try {
@@ -278,6 +280,14 @@ export async function updateOrderToPaid({
   });
 
   if (!updatedOrder) throw new Error("Error updating order");
+
+  sendPurchaseReceipt({
+    order: {
+      ...updatedOrder,
+      shippingAddress: updatedOrder.shippingAddress as ShippingAddress,
+      paymentResult: updatedOrder.paymentResult as PaymentResult,
+    },
+  });
 }
 
 //get user orders
